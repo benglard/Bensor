@@ -1,0 +1,27 @@
+-- numel()
+-- dim()
+-- element_size()
+-- item()
+-- Strided narrow
+-- .t()/t_()
+-- operator[]
+-- from_blob
+-- squeeze/unsqueeze
+
+Negative indexing
+at with less indices
+advanced indexing
+contiguous/isContiguous()
+index_put, index_put_, fill
+masked_select
+resize_
+scatter_
+torch.cat
+split
+apply
+where
+sort/topk?
+comparison operators
+sparse
+iterators
+cuda/opencl
