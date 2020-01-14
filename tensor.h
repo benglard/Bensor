@@ -13,8 +13,9 @@ public:
   using TensorShape = std::vector<IndexType>;
 
   template <typename IteratorType> class Iterator {
-    using reference = IteratorType; // Tensor<IteratorType>;
-    using pointer = IteratorType *; // Tensor<IteratorType> *;
+    using reference =
+        std::pair<IndexType, IteratorType>; // Tensor<IteratorType>;
+    using pointer = IteratorType *;         // Tensor<IteratorType> *;
 
   public:
     Iterator(pointer ptr, IndexType index) : ptr_(ptr), index_(index) {}
@@ -23,7 +24,9 @@ public:
       ++index_;
       return i;
     }
-    reference operator*() { return ptr_->operator[](index_); }
+    reference operator*() {
+      return std::make_pair(index_, ptr_->operator[](index_));
+    }
     pointer operator->() { return ptr_; }
     bool operator==(const Iterator &rhs) {
       return ptr_ == rhs.ptr_ && index_ == rhs.index_;
@@ -39,6 +42,8 @@ public:
     bool operator!=(const Iterator &rhs) const {
       return ptr_ != rhs.ptr_ || index_ != rhs.index_;
     }
+
+    IndexType index() const { return index_; }
 
   private:
     pointer ptr_{nullptr};

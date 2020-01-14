@@ -71,9 +71,10 @@ int main(void) {
   std::cout << h2 << std::endl << h3 << std::endl;
 
   for (auto elem : d)
-    for (auto row : elem)
-      for (auto col : row)
-        std::cout << "elem/row/col = " << col << std::endl;
+    for (auto row : elem.second)
+      for (auto col : row.second)
+        std::cout << "(" << elem.first << ", " << row.first << ", " << col.first
+                  << ") " << col.second << std::endl;
 
   return 0;
 }
