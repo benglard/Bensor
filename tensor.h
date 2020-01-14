@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <numeric>
 #include <vector>
@@ -10,7 +11,47 @@ template <typename TensorType> class Tensor final {
 public:
   using IndexType = std::int64_t;
   using TensorShape = std::vector<IndexType>;
-  using AdvancedTensorShape = std::vector<std::vector<std::vector<IndexType>>>;
+
+  template <typename IteratorType> class Iterator {
+    using reference = IteratorType; // Tensor<IteratorType>;
+    using pointer = IteratorType *; // Tensor<IteratorType> *;
+
+  public:
+    Iterator(pointer ptr, IndexType index) : ptr_(ptr), index_(index) {}
+    Iterator operator++() {
+      auto i = *this;
+      ++index_;
+      return i;
+    }
+    reference operator*() { return ptr_->operator[](index_); }
+    pointer operator->() { return ptr_; }
+    bool operator==(const Iterator &rhs) {
+      return ptr_ == rhs.ptr_ && index_ == rhs.index_;
+    }
+    bool operator!=(const Iterator &rhs) {
+      return ptr_ != rhs.ptr_ || index_ != rhs.index_;
+    }
+    reference operator*() const { return ptr_->operator[](index_); }
+    pointer operator->() const { return ptr_; }
+    bool operator==(const Iterator &rhs) const {
+      return ptr_ == rhs.ptr_ && index_ == rhs.index_;
+    }
+    bool operator!=(const Iterator &rhs) const {
+      return ptr_ != rhs.ptr_ || index_ != rhs.index_;
+    }
+
+  private:
+    pointer ptr_{nullptr};
+    IndexType index_{0};
+  };
+
+  using iterator = Iterator<Tensor<TensorType>>;
+  using const_iterator = Iterator<const Tensor<TensorType>>;
+
+  iterator begin() { return iterator(this, 0); }
+  iterator end() { return iterator(this, size(0)); }
+  const_iterator begin() const { return const_iterator(this, 0); }
+  const_iterator end() const { return const_iterator(this, size(0)); }
 
   Tensor(const std::vector<TensorType> &initial_data, const TensorShape &shape)
       : data_(initial_data), sizes_(shape) {
@@ -78,45 +119,19 @@ public:
   }
 
   Tensor operator[](IndexType index) { return narrow(0, index, 1, 1, false); }
-
-  Tensor operator[](const AdvancedTensorShape &indices) {
-    auto t = this;
-
-    for (std::size_t d{0}, nd{indices.size()}; d < nd; ++nd) {
-      const auto &dim_index = indices[d];
-      const auto index_size = dim_index.size();
-      assert(index_size < 4);
-
-      const auto current_dim_size = sizes_[d];
-
-      switch (index_size) {
-      case 0: {
-        t = t.narrow(d, 0, current_dim_size);
-        break;
-      }
-      case 1: {
-        t = t.narrow(d, dim_index[0][0], 1, 1);
-        break;
-      }
-      case 2: {
-        const auto start = dim_index[0];
-
-        break;
-      }
-      case 3: {
-        break;
-      }
-      }
-    }
-    return t;
+  Tensor operator[](IndexType index) const {
+    return narrow(0, index, 1, 1, false);
   }
 
-  Tensor select(IndexType dim, IndexType val) const {
+  Tensor select(IndexType dim, IndexType val, bool keepdim = false) const {
     auto new_sizes = sizes_;
-    new_sizes.erase(new_sizes.begin() + dim);
     auto new_strides = strides_;
     auto offset = new_strides[dim] * val;
-    new_strides.erase(new_strides.begin() + dim);
+
+    if (!keepdim && new_sizes.size() > 1) {
+      new_sizes.erase(new_sizes.begin() + dim);
+      new_strides.erase(new_strides.begin() + dim);
+    }
 
     return Tensor(beginning_ + offset, ending_, new_sizes, new_strides);
   }

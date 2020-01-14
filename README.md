@@ -2,11 +2,13 @@
 
 Ben's tiny Tensor Library. PyTorch inspired syntax but fully templated, e.g. not limited to just numeric types.
 
-Supports initialization from vectors, creating views (select + narrow + indexing), reshaping, flattening, permuting, and getting access the underlying data.
+Supports initialization from vectors, creating views (select + narrow + indexing), iterators, reshaping, flattening, permuting, and getting access the underlying data.
 
 ## Sample
 
 ```c++
+#include <array>
+
 #include "tensor.h"
 
 int main(void) {
@@ -57,7 +59,7 @@ int main(void) {
   std::cout << f[0] << std::endl << f[1] << std::endl;
   std::cout << b[0][1][1] << b[0][1][1].item() << std::endl << std::endl;
 
-  std::array<int, 10> garr = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  std::array<int, 10> garr{{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
   auto g = Tensor<int>::fromBlob(garr.data(), {2, 5});
   std::cout << g << std::endl;
 
@@ -67,6 +69,11 @@ int main(void) {
   auto h2 = h.squeeze().unsqueeze(0).unsqueeze(3);
   auto h3 = h2.squeeze(3).squeeze(0);
   std::cout << h2 << std::endl << h3 << std::endl;
+
+  for (auto elem : d)
+    for (auto row : elem)
+      for (auto col : row)
+        std::cout << "elem/row/col = " << col << std::endl;
 
   return 0;
 }
