@@ -8,10 +8,10 @@
 -- from_blob
 -- squeeze/unsqueeze
 -- iterators/const iterators
+-- advanced indexing
 
 Negative indexing
 at with less indices
-advanced indexing
 contiguous/isContiguous()
 index_put, index_put_, fill
 masked_select

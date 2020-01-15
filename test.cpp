@@ -1,5 +1,3 @@
-#include <array>
-
 #include "tensor.h"
 
 int main(void) {
@@ -44,6 +42,9 @@ int main(void) {
 
   Tensor<int> e({1});
   std::cout << e << "item = " << e.item() << std::endl << std::endl;
+  auto &x = e.item();
+  x = 3;
+  std::cout << e << "item = " << e.item() << std::endl << std::endl;
 
   Tensor<int> f({1, 2, 3, 4}, {2, 2});
   std::cout << f << std::endl << f.t() << std::endl;
@@ -65,7 +66,11 @@ int main(void) {
     for (auto row : elem.second)
       for (auto col : row.second)
         std::cout << "(" << elem.first << ", " << row.first << ", " << col.first
-                  << ") " << col.second << std::endl;
+                  << ") " << col.second << col.second.item() << std::endl
+                  << std::endl;
+
+  std::cout << c[0][{0, -1, 2}] << std::endl
+            << c[0][{0, 3, 2}][{1, 2, 1}] << std::endl;
 
   return 0;
 }

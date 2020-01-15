@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -119,13 +120,22 @@ public:
   const TensorType at(const TensorShape &indices) const {
     return beginning_[indexListToSingleIndex(indices)];
   }
-  TensorType &operator[](const TensorShape &indices) {
-    return beginning_[indexListToSingleIndex(indices)];
-  }
 
   Tensor operator[](IndexType index) { return narrow(0, index, 1, 1, false); }
   Tensor operator[](IndexType index) const {
     return narrow(0, index, 1, 1, false);
+  }
+  Tensor operator[](const std::array<IndexType, 3> &index) {
+    const IndexType start = index[0];
+    IndexType end = index[1];
+    if (end == -1) {
+      end = size(0);
+    }
+    const IndexType length{end - start};
+    assert(length > 0);
+    const IndexType stride = index[2];
+
+    return narrow(0, start, length, stride, false);
   }
 
   Tensor select(IndexType dim, IndexType val, bool keepdim = false) const {
@@ -254,7 +264,7 @@ public:
     return sizes_[dim];
   }
 
-  TensorType item() const {
+  TensorType &item() const {
     assert(numel() == 1);
     return *beginning_;
   }
