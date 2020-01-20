@@ -44,13 +44,13 @@ int main(void) {
   a.select(1, 1).at({0, 0, 1}) = 5;
   std::cout << a << std::endl;
 
-  std::cout << a.select(1, 0) << std::endl;
-  std::cout << a.select(1, 1) << std::endl;
-  std::cout << a.select(3, 0) << std::endl;
-  std::cout << a.select(3, 1) << std::endl;
-  std::cout << a.select(3, 2) << std::endl;
+  std::cout << "select = " << a.select(1, 0) << std::endl;
+  std::cout << "select = " << a.select(1, 1) << std::endl;
+  std::cout << "select = " << a.select(3, 0) << std::endl;
+  std::cout << "select = " << a.select(3, 1) << std::endl;
+  std::cout << "select = " << a.select(3, 2) << std::endl;
 
-  std::cout << a.permute({0, 1, 3, 2}) << std::endl;
+  std::cout << "per = " << a.permute({0, 1, 3, 2}) << std::endl;
 
   Tensor<int> b({1, 2, 3, 4, 5, 6, 7, 8}, {2, 2, 2});
   std::cout << b.select(1, 1).select(1, 1) << std::endl;
@@ -132,6 +132,18 @@ int main(void) {
   std::cout << cloud << std::endl;
 
   std::cout << had.cast<int>() << std::endl;
+
+  std::cout << a.select(3, 0) << std::endl
+            << a.select(3, 0).contiguous() << std::endl;
+
+  Tensor<int> ca{{1, 2, 3, 4}, {1, 1, 4}};
+  Tensor<int> cb{{4, 3, 2, 1}, {1, 1, 4}};
+  Tensor<int> cc{{1, 2, 3, 4}, {1, 1, 4}};
+  Tensor<int> cd{{4, 3, 2, 1}, {1, 1, 4}};
+  std::vector<Tensor<int>> cv = {ca, cb, cc, cd};
+  std::cout << bensor::cat(cv, 0) << std::endl;
+  std::cout << bensor::cat(cv, 1) << std::endl;
+  std::cout << bensor::cat(cv, 2) << std::endl;
 
   return 0;
 }

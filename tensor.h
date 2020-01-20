@@ -208,17 +208,24 @@ public:
   }
 
   Tensor flatten() const {
-    const auto &ranges = generateIndexList();
-
-    const auto new_size = std::max(1UL, num_elements_);
+    const auto new_size = std::max(1UL, numel());
     std::vector<TensorType> new_data(new_size);
     const TensorShape new_sizes{static_cast<IndexType>(new_size)};
     std::size_t new_data_index{0};
-    for (const auto &row : ranges) {
+    for (const auto &row : generateIndexList()) {
       new_data[new_data_index++] = at(row);
     }
 
     return Tensor(new_data, new_sizes);
+  }
+
+  Tensor contiguous() const {
+    std::vector<TensorType> new_data(numel());
+    std::size_t new_data_index{0};
+    for (const auto &row : generateIndexList()) {
+      new_data[new_data_index++] = at(row);
+    }
+    return Tensor(new_data, sizes_);
   }
 
   Tensor permute(const TensorShape &new_indices) {
@@ -465,9 +472,51 @@ private:
 };
 
 template <typename TensorType>
+Tensor<TensorType> cat(const std::vector<Tensor<TensorType>> tensors,
+                       std::size_t dim = 0) {
+  const auto num_tensors = tensors.size();
+  assert(num_tensors > 0);
+
+  const auto &s1 = tensors[0].sizes();
+  const auto num_sizes = s1.size();
+  assert(dim < num_sizes);
+  std::vector<IndexType> new_sizes{s1};
+
+  for (std::size_t ti{1}; ti < num_tensors; ++ti) {
+    const auto &t = tensors[ti];
+    const auto &st = t.sizes();
+    const auto num_other_sizes = st.size();
+    assert(num_sizes == num_other_sizes);
+    for (std::size_t i{0}; i < num_sizes; ++i) {
+      if (i != dim) {
+        assert(s1[i] == st[i]);
+      } else {
+        new_sizes[i] += st[i];
+      }
+    }
+  }
+
+  std::size_t numel = new_sizes.size() ? 1UL : 0UL;
+  for (const auto s : new_sizes) {
+    numel *= s;
+  }
+  assert(numel > 0);
+
+  std::vector<TensorType> new_data(numel);
+  std::size_t i{0};
+  for (const auto &t : tensors) {
+    for (const auto &row : t.generateIndexList()) {
+      new_data[i++] = t.at(row);
+    }
+  }
+
+  return Tensor<TensorType>(new_data, new_sizes);
+}
+
+template <typename TensorType>
 std::ostream &operator<<(std::ostream &os, const Tensor<TensorType> &tensor) {
   os << "Data: [ ";
-  auto tc = tensor.flatten();
+  auto tc = tensor.contiguous();
   auto data = tc.data();
   for (std::size_t e{0}; e < tensor.numel(); ++e) {
     os << data[e] << " ";

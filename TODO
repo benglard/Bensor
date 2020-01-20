@@ -16,13 +16,11 @@
 -- index_put_
 -- masked_scatter_, masked_fill_
 -- basic cast
+-- torch.cat
+-- contiguous
 
 Negative indexing
-at with less indices
-contiguous/isContiguous()
 resize_
-scatter_
-torch.cat
 split
 sort/topk?
 comparison operators
