@@ -9,18 +9,21 @@
 -- squeeze/unsqueeze
 -- iterators/const iterators
 -- advanced indexing
+-- fill
+-- apply
+-- where
+-- masked_select
+-- index_put_
+-- masked_scatter_, masked_fill_
+-- basic cast
 
 Negative indexing
 at with less indices
 contiguous/isContiguous()
-index_put, index_put_, fill
-masked_select
 resize_
 scatter_
 torch.cat
 split
-apply
-where
 sort/topk?
 comparison operators
 sparse

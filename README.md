@@ -9,6 +9,22 @@ Supports initialization from vectors, creating views (select + narrow + indexing
 ```c++
 #include "tensor.h"
 
+using namespace bensor;
+
+struct Point {
+  Point() {
+    x = (float)rand() / RAND_MAX;
+    y = (float)rand() / RAND_MAX;
+    z = (float)rand() / RAND_MAX;
+  }
+  Point(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+  float x, y, z;
+};
+std::ostream &operator<<(std::ostream &os, const Point &p) {
+  os << "Point(" << p.x << ", " << p.y << ", " << p.z << ")";
+  return os;
+}
+
 int main(void) {
   std::cout << Tensor<double>::empty({2, 2}) << std::endl;
 
@@ -80,6 +96,42 @@ int main(void) {
 
   std::cout << c[0][{0, -1, 2}] << std::endl
             << c[0][{0, 3, 2}][{1, 2, 1}] << std::endl;
+
+  h.fill_(1);
+  std::cout << h << std::endl;
+  g[0][{0, -1, 2}].fill_(1);
+  std::cout << g << std::endl;
+
+  h.apply_([](const int v) { return v + 1; });
+  std::cout << h << std::endl;
+
+  auto ha = h.apply([](const int v) { return v + 1; });
+  std::cout << h << std::endl << ha << std::endl;
+
+  auto had = h.apply<double>([](const int v) { return std::sqrt(v); });
+  std::cout << had << std::endl;
+
+  auto cloud = Tensor<Point>::empty({5});
+  auto cloud_x = cloud.apply<float>([](const Point &p) { return p.x; });
+  std::cout << cloud << std::endl << cloud_x << std::endl;
+
+  auto cloud_x_gt = cloud.where([](const Point &p) { return p.x > 0.5; });
+  std::cout << cloud_x_gt << std::endl;
+  cloud_x.masked_fill_(cloud_x_gt, 0);
+  cloud.masked_fill_(cloud_x_gt, {1, 2, 3});
+  std::cout << cloud_x << std::endl;
+  std::cout << cloud << std::endl
+            << cloud.masked_select(cloud_x_gt) << std::endl;
+
+  auto index = Tensor<IndexType>(std::vector<IndexType>{0});
+  auto values = Tensor<Point>::empty({1});
+  cloud.index_put_(index, values);
+  std::cout << cloud << std::endl;
+
+  cloud.masked_scatter_(cloud_x_gt, Tensor<Point>::empty({1, 3}));
+  std::cout << cloud << std::endl;
+
+  std::cout << had.cast<int>() << std::endl;
 
   return 0;
 }
